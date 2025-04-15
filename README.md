@@ -17,8 +17,7 @@ This ecommerce project is developed further on an opensource eCommerce Framework
 6. The project will show up in localhost:8000 in your browser.
 
 
-<p align="center">
-    <a href="https://webkul.com/blog/laravel-ecommerce-website/">Installation Guide</a> 
-</p>
+- <a href="https://webkul.com/blog/laravel-ecommerce-website/">Installation Guide</a> 
+
 
 
