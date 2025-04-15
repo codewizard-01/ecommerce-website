@@ -1,15 +1,11 @@
-<p align="center">
-    <a href="http://www.bagisto.com"><img src="https://bagisto.com/wp-content/themes/bagisto/images/logo.png" alt="Total Downloads"></a>
-</p>
+
+# eCommerce Website
 
 <p align="center">
     <a href="https://packagist.org/packages/bagisto/bagisto"><img src="https://poser.pugx.org/bagisto/bagisto/license.svg" alt="License"></a>
-    <a href="https://www.codetriage.com/bagisto/bagisto"><img src="https://www.codetriage.com/bagisto/bagisto/badges/users.svg" alt="Open Source Helpers"></a>
+    <a href="https://webkul.com/blog/laravel-ecommerce-website/">Installation Guide</a> 
 </p>
 
-<p align="center">
-   <a href="https://webkul.com/blog/laravel-ecommerce-website/">Installation Guide</a> 
-</p>
 
 
 # Introduction
