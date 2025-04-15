@@ -1,8 +1,9 @@
 
-# eCommerce Website
+<h1 align="center">
+    eCommerce Website
+</h1>
 
 <p align="center">
-    <a href="https://packagist.org/packages/bagisto/bagisto"><img src="https://poser.pugx.org/bagisto/bagisto/license.svg" alt="License"></a>
     <a href="https://webkul.com/blog/laravel-ecommerce-website/">Installation Guide</a> 
 </p>
 
