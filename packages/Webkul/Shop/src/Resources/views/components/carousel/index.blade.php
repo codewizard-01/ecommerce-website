@@ -1,17 +1,14 @@
 @props(['options'])
 
 <v-carousel :images="{{ json_encode($options['images'] ?? []) }}">
-    <div class="overflow-hidden">
-        <div class="shimmer aspect-[2.743/1] max-h-screen w-screen"></div>
-    </div>
+  <div class="overflow-hidden">
+    <div class="shimmer aspect-[2.743/1] max-h-screen w-screen"></div>
+  </div>
 </v-carousel>
 
 @pushOnce('scripts')
-    <script
-        type="text/x-template"
-        id="v-carousel-template"
-    >
-        <div class="relative m-auto flex w-full overflow-hidden">
+<script type="text/x-template" id="v-carousel-template">
+  <div class="relative m-auto flex w-full overflow-hidden">
             <!-- Slider -->
             <div 
                 class="inline-flex translate-x-0 cursor-pointer transition-transform duration-700 ease-out will-change-transform"
@@ -75,213 +72,265 @@
                 >
                 </div>
             </div>
+
+            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.search_bar.before') !!}
+
+            <!-- Search Bar Container -->
+            <div class="absolute top-1/2  left-1/2 max-w-[500px] transform -translate-x-1/2 -translate-y-1/2 h-[50px] bg-red-300 -mt-[22px] ms-[-110px] flex gap-5 items-center justify-center ">
+                <form
+                    action="{{ route('shop.search.index') }}"
+                    class="flex max-w-[445px] items-center"
+                    role="search"
+                >
+                    <label
+                        for="organic-search"
+                        class="sr-only"
+                    >
+                        @lang('shop::app.components.layouts.header.search')
+                    </label>
+    
+                    <div class="icon-search pointer-events-none absolute top-2.5 flex items-center text-xl ltr:left-3 rtl:right-3"></div>
+    
+                    <input
+                        type="text"
+                        name="query"
+                        value="{{ request('query') }}"
+                        class="block w-full rounded-lg border border-transparent bg-zinc-100 px-11 py-3 text-xs font-medium text-gray-900 transition-all hover:border-gray-400 focus:border-gray-400"
+                        minlength="{{ core()->getConfigData('catalog.products.search.min_query_length') }}"
+                        maxlength="{{ core()->getConfigData('catalog.products.search.max_query_length') }}"
+                        placeholder="@lang('shop::app.components.layouts.header.search-text')"
+                        aria-label="@lang('shop::app.components.layouts.header.search-text')"
+                        aria-required="true"
+                        pattern="[^\\]+"
+                        required
+                        
+                    >
+    
+                    <button
+                        type="submit"
+                        class="hidden"
+                        aria-label="@lang('shop::app.components.layouts.header.submit')"
+                    >
+                    </button>
+                </form>
+                <div>
+
+                    @if (core()->getConfigData('catalog.products.settings.image_search'))
+                    @include('shop::search.images.index')
+                    @endif
+                </div>
+            </div>
+    
+            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.search_bar.after') !!}
         </div>
     </script>
 
-    <script type="module">
-        app.component("v-carousel", {
-            template: '#v-carousel-template',
+<script type="module">
+app.component("v-carousel", {
+  template: '#v-carousel-template',
 
-            props: ['images'],
+  props: ['images'],
 
-            data() {
-                return {
-                    isDragging: false,
-                    startPos: 0,
-                    currentTranslate: 0,
-                    prevTranslate: 0,
-                    animationID: 0,
-                    currentIndex: 0,
-                    slider: '',
-                    slides: [],
-                    autoPlayInterval: null,
-                    direction: 'ltr',
-                    startFrom: 1,
-                };
-            },
+  data() {
+    return {
+      isDragging: false,
+      startPos: 0,
+      currentTranslate: 0,
+      prevTranslate: 0,
+      animationID: 0,
+      currentIndex: 0,
+      slider: '',
+      slides: [],
+      autoPlayInterval: null,
+      direction: 'ltr',
+      startFrom: 1,
+    };
+  },
 
-            mounted() {
-                this.slider = this.$refs.sliderContainer;
+  mounted() {
+    this.slider = this.$refs.sliderContainer;
 
-                if (
-                    this.$refs.slide
-                    && typeof this.$refs.slide[Symbol.iterator] === 'function'
-                ) {
-                    this.slides = Array.from(this.$refs.slide);
-                }
+    if (
+      this.$refs.slide &&
+      typeof this.$refs.slide[Symbol.iterator] === 'function'
+    ) {
+      this.slides = Array.from(this.$refs.slide);
+    }
 
-                this.init();
+    this.init();
 
-                this.play();
-            },
+    this.play();
+  },
 
-            methods: {
-                init() {
-                    this.direction = document.dir;
+  methods: {
+    init() {
+      this.direction = document.dir;
 
-                    if (this.direction == 'rtl') {
-                        this.startFrom = -1;
-                    }
+      if (this.direction == 'rtl') {
+        this.startFrom = -1;
+      }
 
-                    this.slides.forEach((slide, index) => {
-                        slide.querySelector('img')?.addEventListener('dragstart', (e) => e.preventDefault());
+      this.slides.forEach((slide, index) => {
+        slide.querySelector('img')?.addEventListener('dragstart', (e) => e.preventDefault());
 
-                        slide.addEventListener('mousedown', this.handleDragStart);
+        slide.addEventListener('mousedown', this.handleDragStart);
 
-                        slide.addEventListener('touchstart', this.handleDragStart);
+        slide.addEventListener('touchstart', this.handleDragStart);
 
-                        slide.addEventListener('mouseup', this.handleDragEnd);
+        slide.addEventListener('mouseup', this.handleDragEnd);
 
-                        slide.addEventListener('mouseleave', this.handleDragEnd);
+        slide.addEventListener('mouseleave', this.handleDragEnd);
 
-                        slide.addEventListener('touchend', this.handleDragEnd);
+        slide.addEventListener('touchend', this.handleDragEnd);
 
-                        slide.addEventListener('mousemove', this.handleDrag);
+        slide.addEventListener('mousemove', this.handleDrag);
 
-                        slide.addEventListener('touchmove', this.handleDrag, { passive: true });
-                    });
-
-                    window.addEventListener('resize', this.setPositionByIndex);
-                },
-
-                handleDragStart(event) {
-                    this.startPos = event.type === 'mousedown' ? event.clientX : event.touches[0].clientX;
-
-                    this.isDragging = true;
-
-                    this.animationID = requestAnimationFrame(this.animation);
-                },
-
-                handleDrag(event) {
-                    if (! this.isDragging) {
-                        return;
-                    }
-
-                    const currentPosition = event.type === 'mousemove' ? event.clientX : event.touches[0].clientX;
-
-                    this.currentTranslate = this.prevTranslate + currentPosition - this.startPos;
-                },
-
-                handleDragEnd(event) {
-                    clearInterval(this.autoPlayInterval);
-
-                    cancelAnimationFrame(this.animationID);
-
-                    this.isDragging = false;
-
-                    const movedBy = this.currentTranslate - this.prevTranslate;
-
-                    if (this.direction == 'ltr') {
-                        if (
-                            movedBy < -100
-                            && this.currentIndex < this.slides.length - 1
-                        ) {
-                            this.currentIndex += 1;
-                        }
-
-                        if (
-                            movedBy > 100
-                            && this.currentIndex > 0
-                        ) {
-                            this.currentIndex -= 1;
-                        }
-                    } else {
-                        if (
-                            movedBy > 100
-                            && this.currentIndex < this.slides.length - 1
-                        ) {
-                            if (Math.abs(this.currentIndex) != this.slides.length - 1) {
-                                this.currentIndex -= 1;
-                            }
-                        }
-
-                        if (
-                            movedBy < -100
-                            && this.currentIndex < 0
-                        ) {
-                            this.currentIndex += 1;
-                        }
-                    }
-
-                    this.setPositionByIndex();
-
-                    this.play();
-                },
-
-                animation() {
-                    this.setSliderPosition();
-
-                    if (this.isDragging) {
-                        requestAnimationFrame(this.animation);
-                    }
-                },
-
-                setPositionByIndex() {
-                    this.currentTranslate = this.currentIndex * -window.innerWidth;
-
-                    this.prevTranslate = this.currentTranslate;
-
-                    this.setSliderPosition();
-                },
-
-                setSliderPosition() {
-                    if (this.slider) {
-                        this.slider.style.transform = `translateX(${this.currentTranslate}px)`;
-                    }
-                },
-
-                visitLink(image) {
-                    if (image.link) {
-                        window.location.href = image.link;
-                    }
-                },
-
-                navigate(type) {
-                    clearInterval(this.autoPlayInterval);
-
-                    if (this.direction === 'rtl') {
-                        type === 'next' ? this.prev() : this.next();
-                    } else {
-                        type === 'next' ? this.next() : this.prev();
-                    }
-
-                    this.setPositionByIndex();
-
-                    this.play();
-                },
-
-                next() {
-                    this.currentIndex = (this.currentIndex + this.startFrom) % this.images.length;
-                },
-
-                prev() {
-                    this.currentIndex = this.direction == 'ltr'
-                        ? this.currentIndex > 0 ? this.currentIndex - 1 : 0
-                        : this.currentIndex < 0 ? this.currentIndex + 1 : 0;
-                },
-
-                navigateByPagination(index) {
-                    this.direction == 'rtl' ? index = -index : '';
-
-                    clearInterval(this.autoPlayInterval);
-
-                    this.currentIndex = index;
-
-                    this.setPositionByIndex();
-
-                    this.play();
-                },
-
-                play() {
-                    clearInterval(this.autoPlayInterval);
-
-                    this.autoPlayInterval = setInterval(() => {
-                        this.currentIndex = (this.currentIndex + this.startFrom) % this.images.length;
-
-                        this.setPositionByIndex();
-                    }, 5000);
-                },
-            },
+        slide.addEventListener('touchmove', this.handleDrag, {
+          passive: true
         });
-    </script>
+      });
+
+      window.addEventListener('resize', this.setPositionByIndex);
+    },
+
+    handleDragStart(event) {
+      this.startPos = event.type === 'mousedown' ? event.clientX : event.touches[0].clientX;
+
+      this.isDragging = true;
+
+      this.animationID = requestAnimationFrame(this.animation);
+    },
+
+    handleDrag(event) {
+      if (!this.isDragging) {
+        return;
+      }
+
+      const currentPosition = event.type === 'mousemove' ? event.clientX : event.touches[0].clientX;
+
+      this.currentTranslate = this.prevTranslate + currentPosition - this.startPos;
+    },
+
+    handleDragEnd(event) {
+      clearInterval(this.autoPlayInterval);
+
+      cancelAnimationFrame(this.animationID);
+
+      this.isDragging = false;
+
+      const movedBy = this.currentTranslate - this.prevTranslate;
+
+      if (this.direction == 'ltr') {
+        if (
+          movedBy < -100 &&
+          this.currentIndex < this.slides.length - 1
+        ) {
+          this.currentIndex += 1;
+        }
+
+        if (
+          movedBy > 100 &&
+          this.currentIndex > 0
+        ) {
+          this.currentIndex -= 1;
+        }
+      } else {
+        if (
+          movedBy > 100 &&
+          this.currentIndex < this.slides.length - 1
+        ) {
+          if (Math.abs(this.currentIndex) != this.slides.length - 1) {
+            this.currentIndex -= 1;
+          }
+        }
+
+        if (
+          movedBy < -100 &&
+          this.currentIndex < 0
+        ) {
+          this.currentIndex += 1;
+        }
+      }
+
+      this.setPositionByIndex();
+
+      this.play();
+    },
+
+    animation() {
+      this.setSliderPosition();
+
+      if (this.isDragging) {
+        requestAnimationFrame(this.animation);
+      }
+    },
+
+    setPositionByIndex() {
+      this.currentTranslate = this.currentIndex * -window.innerWidth;
+
+      this.prevTranslate = this.currentTranslate;
+
+      this.setSliderPosition();
+    },
+
+    setSliderPosition() {
+      if (this.slider) {
+        this.slider.style.transform = `translateX(${this.currentTranslate}px)`;
+      }
+    },
+
+    visitLink(image) {
+      if (image.link) {
+        window.location.href = image.link;
+      }
+    },
+
+    navigate(type) {
+      clearInterval(this.autoPlayInterval);
+
+      if (this.direction === 'rtl') {
+        type === 'next' ? this.prev() : this.next();
+      } else {
+        type === 'next' ? this.next() : this.prev();
+      }
+
+      this.setPositionByIndex();
+
+      this.play();
+    },
+
+    next() {
+      this.currentIndex = (this.currentIndex + this.startFrom) % this.images.length;
+    },
+
+    prev() {
+      this.currentIndex = this.direction == 'ltr' ?
+        this.currentIndex > 0 ? this.currentIndex - 1 : 0 :
+        this.currentIndex < 0 ? this.currentIndex + 1 : 0;
+    },
+
+    navigateByPagination(index) {
+      this.direction == 'rtl' ? index = -index : '';
+
+      clearInterval(this.autoPlayInterval);
+
+      this.currentIndex = index;
+
+      this.setPositionByIndex();
+
+      this.play();
+    },
+
+    play() {
+      clearInterval(this.autoPlayInterval);
+
+      this.autoPlayInterval = setInterval(() => {
+        this.currentIndex = (this.currentIndex + this.startFrom) % this.images.length;
+
+        this.setPositionByIndex();
+      }, 5000);
+    },
+  },
+});
+</script>
 @endpushOnce
